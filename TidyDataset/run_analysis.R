@@ -32,7 +32,7 @@
 ## STEP 3 : Appropriately labels the data set with descriptive activity names. 
 
 # directory containing all datasets
-dataset.dir <- "./UCI HAR Dataset"
+dataset.dir <- "/Users/diegolopezpozueta/Git/datasciencecoursera/TidyDataset/UCI HAR Dataset"
 
 # read activity_labels file and rename variables
 activity_labels <- read.table(file = paste(dataset.dir,"activity_labels.txt",sep='/'),
@@ -72,7 +72,7 @@ y.train <- read.table(file = paste(dataset.dir,"train","y_train.txt",sep='/'),
                             strip.white = TRUE)
 names(y.train) <- "activity_id"
 str(y.train)
-y.train <- merge(y.train, activity_labels, by.x = "activity_id", by.y = "activity_id", all.x = TRUE)
+y.train <- merge(y.train, activity_labels, by.x = "activity_id", by.y = "activity_id", all.x = TRUE, sort = FALSE)
 str(y.train)
 
 trainset <- cbind(subject.train, train, y.train)
@@ -102,7 +102,7 @@ y.test <- read.table(file = paste(dataset.dir,"test","y_test.txt",sep='/'),
                       strip.white = TRUE)
 names(y.test) <- "activity_id"
 str(y.test)
-y.test <- merge(y.test, activity_labels, by.x = "activity_id", by.y = "activity_id", all.x = TRUE)
+y.test <- merge(y.test, activity_labels, by.x = "activity_id", by.y = "activity_id", all.x = TRUE , sort = FALSE)
 str(y.test)
 
 testset <- cbind(subject.test, test, y.test)
@@ -120,7 +120,7 @@ str(dataset)
 
 ## STEP 4 : Extracts only the measurements on the mean and standard deviation for each measurement. 
 
-# get the features wiht "mean()" and "std()" in the features names
+# get the features with "mean()" and "std()" in the features names
 keep.features.mean <- grep(pattern= "mean()", names(dataset), fixed = TRUE)
 keep.features.std <- grep(pattern= "std()", names(dataset), fixed = TRUE)
 keep.features <- sort(c(keep.features.mean, keep.features.std), decreasing = FALSE)
