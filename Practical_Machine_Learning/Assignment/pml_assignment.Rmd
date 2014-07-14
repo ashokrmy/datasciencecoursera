@@ -1,0 +1,239 @@
+---
+title: "Predicting Human Activity"
+author: "Diego López Pozueta"
+date: "July 13th, 2014"
+output: html_document
+---
+
+# Executive Summary
+
+Using devices such as [*Jawbone Up*](https://jawbone.com/up), [*Nike FuelBand*](http://www.nike.com/us/en_us/c/nikeplus-fuelband) or [*Fitbit*](http://www.fitbit.com/) it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. 
+
+The goal of this project is to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants where they were asked to perform barbell lifts correctly and incorrectly in 5 different ways; and build a model to predict the manner in which they did the exercise. 
+
+# Dataset 
+
+The dataset for this project is the [*Weight Lifting Exercises Dataset*](http://groupware.les.inf.puc-rio.br/har). 
+
+Human activity recognition research has traditionally focused on discriminating between different activities, i.e. to predict "which" activity was performed at a specific point in time. The approach proposed for the Weight Lifting Exercises dataset is to investigate "how (well)" an activity was performed. 
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E). Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes. 
+
+For more information please visit http://groupware.les.inf.puc-rio.br/har.
+
+For this project, we have a training and a testing dataset and both can be downloaded here:
+
+* training dataset: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+* testing dataset: https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+## Download dataset 
+
+```{r warning=FALSE, message=FALSE}
+# dataset folder to store the training and testing dataset
+data.folder <- "./Datasets/"
+# current date in format YYYYMMDD
+date <- gsub(pattern="-", replacement = "", Sys.Date()) 
+# download training dataset  
+training.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+training.file.name <- paste(data.folder,"training_",date,".csv", sep="")
+download.file(training.url, training.file.name , method = "curl")
+# download testing dataset  
+testing.url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+testing.file.name <- paste(data.folder,"testing_",date,".csv", sep="")
+download.file(testing.url, testing.file.name , method = "curl")
+```
+
+## Read dataset
+
+```{r warning=FALSE, message=FALSE}
+# read training and testing datasets
+training <- read.csv(training.file.name, header = TRUE, stringsAsFactors = FALSE)
+testing <- read.csv(testing.file.name, header = TRUE, stringsAsFactors = FALSE)
+# display structure of training and testing datasets
+str(training) # 160 variables, 19622 observations
+str(testing) # 160 variables, 20 observations
+```
+
+The variable to predict is *classe* in the training set. This variable does not appear in the testing set as this is the value to predict for the 20 test observations.
+
+## Preprocess dataset
+
+The first 7 columns are identifiers and can be dropped.
+```{r warning=FALSE, message=FALSE}
+# get the name of the identifiers
+(identifiers <- names(training)[1:7])
+vars.identifiers <- names(training) %in% identifiers 
+# exclude identifiers
+training2 <- training[,!vars.identifiers]
+testing2 <- testing[,!vars.identifiers]
+```
+
+Some variables were imported as factors or logical values but we know that they are all numeric. Let's convert them.
+```{r warning=FALSE, message=FALSE}
+# convert to character then to numeric
+# char "" is converted to NAs
+training3 <- as.data.frame(apply(training2, 2,  function(x)as.numeric(as.character(x))))
+testing3 <- as.data.frame(apply(testing2, 2,  function(x)as.numeric(as.character(x))))
+# bring back the classe variable 
+training3$classe <- training$classe
+```
+
+It seems like a lot of variables have missing values
+```{r warning=FALSE, message=FALSE}
+# number of missing values by column
+na.values.cols <- sapply(training3, function(x)sum(is.na(x)))
+table(na.values.cols) # 53 variables without missing values
+sum(na.values.cols>0) # 100 variables have at least 19216 NA's
+```
+
+There are 100 variables with more than 98% of missing values. For simplicity we drop them.
+```{r warning=FALSE, message=FALSE}
+# get the name of the variables to exclude
+na.values.cols.names <- names(na.values.cols [na.values.cols > 0])
+vars.nas <- names(training3) %in% na.values.cols.names 
+# exclude NAs variables
+training4 <- training3[,!vars.nas]
+testing4 <- testing3[,!vars.nas]
+```
+
+We have reduced the original dataset containing 160 features to only 53 by dropping all the features having more than 98% of missing values.
+
+Finally let's convert the class variable *classe* to a factor variable.
+```{r warning=FALSE, message=FALSE}
+training4$classe <- as.factor(training4$classe)
+```
+
+It's important to check that the training and testing datasets contain the same variables and they have the same type, so when we apply the predictive model built with the training set to the testing set we don't get any errors.
+```{r warning=FALSE, message=FALSE}
+# check training and testing have same variables
+names(training4[,-53]) == names(testing4[-53])
+# check training and testing variables have the same type
+sapply(training4[,-53],class) == sapply(testing4[-53],class)
+```
+
+## Explore dataset
+
+Since we still have 53 variables and due to the nature of the dataset, this is, data collected from accelerometers on the belt, forearm, arm and dumbell; chances are that some variables are highly correlated. 
+
+Let's plot heatmap of the correlation between variables.
+```{r warning=FALSE, message=FALSE, fig.width = 10, fig.height=10}
+# correlation matrix between features
+corr.matrix <- cor(training4[,-53])
+# plot heatmap of correlation
+library(ggplot2)
+library(reshape2)
+qplot(x=Var1, y=Var2, data=melt(corr.matrix), fill=value, geom="tile") +
+  scale_fill_gradient2(limits=c(-1, 1)) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+Excluding the diagonal, as the correlation between a variable and itself is always 1, we can see that some features are highly positive correlated (dark blue), or highly negative correlated (dark red).
+
+Using the ***findCorrelation()*** function in ***caret*** package we can find the highly correlated variables that can be dropped. Dropping highly correlated variables reduces the complexity without loosing precision.
+```{r warning=FALSE, message=FALSE}
+library(caret)
+high.cor.var <- findCorrelation(corr.matrix, cutoff = .80, verbose = FALSE)
+# highly correlated variables
+(high.cor.var.names <- rownames(corr.matrix)[high.cor.var])
+```
+
+Examining some examples of variables to drop.
+```{r warning=FALSE, message=FALSE}
+# Example highly negative correlation accel_belt_z
+subset(corr.matrix["accel_belt_z", ], (abs(corr.matrix["accel_belt_z", ])>0.8) == TRUE)
+# Example highly positive correlation accel_belt_z
+subset(corr.matrix["gyros_forearm_z", ], (abs(corr.matrix["gyros_forearm_z", ])>0.8) == TRUE)
+```
+
+Finally exclude the highly correlated variables.
+```{r warning=FALSE, message=FALSE}
+training5 <- training4[,-high.cor.var]
+testing5 <- testing4[,-high.cor.var]
+```
+
+The final training set used has 40 features used to predict the class variable.
+
+# Predictive Model
+
+It's time to build the predictive model. Here I used and compared a CART and a [random forest](http://download.springer.com/static/pdf/639/art%253A10.1023%252FA%253A1010933404324.pdf?auth66=1405538457_0f5fd1af13b0c3ec4a5b9927b642e3e6&ext=.pdf) model. Seems reasonable to use a classification tree as it has been proven to be an efficient algorithm for highly dimensional datasets, in this particular case we ended with 40 features. Random Forest enhances a single decision tree, by growing multiple decision trees. In general, random forest have high accuracy and do not overfit.
+
+## Validation set
+
+Split the training set into 2 subsets for training (60%) and validation (40%).
+```{r warning=FALSE, message=FALSE}
+library(caret)
+# set seed for reproducibility
+set.seed(12345) 
+# randomly select 60% for training and 40% for validation
+inTrain <- createDataPartition(training5$classe, p = 0.6, list = FALSE)
+train.set <- training5[ inTrain,]
+validation.set <- training5[-inTrain,]
+```
+
+
+## Build Model
+
+First, a single CART model is built.
+```{r warning=FALSE, message=FALSE}
+library(rpart)
+# set seed for reproducibility
+set.seed(12345) 
+# train CART model
+model.rpart <- rpart(classe~., data = train.set)
+# display the results 
+printcp(model.rpart) 
+# visualize cross-validation results 
+# plotcp(model.rpart) 
+# detailed summary of splits
+# summary(model.rpart) 
+# see how well performs on the validation set
+predict.model.rpart <- predict(model.rpart, validation.set, type="class")
+confusionMatrix(predict.model.rpart, validation.set$classe)
+```
+We can see that the CART model actually uses only 17 variables to build the decision tree, and has a 71.37% accuracy on the validation set.
+
+Let's try now a random forest.
+```{r warning=FALSE, message=FALSE, fig.width = 10, fig.height=10}
+library(randomForest)
+# set seed for reproducibility
+set.seed(12345) 
+# train random forest model
+model.rf <- randomForest(classe~., data=train.set)
+# view results 
+print(model.rf) 
+# importance of each predictor
+varImpPlot(model.rf) 
+# check random forest model on validation set
+predict.model.rf <- predict(model.rf, validation.set)
+confusionMatrix(predict.model.rf, validation.set$classe)
+```
+
+The random forest has out-of-bag error rate of 0.91%, and a 99.31% accuracy on the validation set. Random Forest 30% better accuracy than the CART model.
+
+## Test Model
+
+Let's use the random forest model to predict the class of the testing set.
+```{r warning=FALSE, message=FALSE}
+testing5$classe <- predict(model.rf, testing5)
+```
+
+And create the separate files containing the answers for the 20 test observations.
+```{r warning=FALSE, message=FALSE}
+pml_write_files = function(x){
+    n = length(x)
+    for(i in 1:n){
+      filename = paste0("problem_id_",i,".txt")
+      write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+    }
+}
+pml_write_files(as.character(testing5$classe))
+```
+
+
+# Bibliography
+
+* Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. [*Qualitative Activity Recognition of Weight Lifting Exercises*](http://groupware.les.inf.puc-rio.br/har). Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+*  Breiman, Leo (2001). [*Random Forests*](http://download.springer.com/static/pdf/639/art%253A10.1023%252FA%253A1010933404324.pdf?auth66=1405538457_0f5fd1af13b0c3ec4a5b9927b642e3e6&ext=.pdf). Machine Learning 45 (1): 5–32. 
+
+
