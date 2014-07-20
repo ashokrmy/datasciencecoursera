@@ -1,0 +1,17 @@
+{
+    "contents" : "\n\n# to run the app\nlibrary(shiny)\n\n# to run the app in the browser \nrunApp()\n\n# to run the app in the browser and show the code\nrunApp(display.mode = \"showcase\")\n\n\n# to display the app within RStudio\nrstudio::viewer(\"http://localhost:8100\")\n# to run the app in RStudio viewer and show the code\nrunApp(display.mode = \"showcase\", launch.browser = rstudio::viewer)\n\n\n\ninstall.packages('devtools')\ndevtools::install_github('rstudio/shinyapps')\nlibrary(shinyapps)\nshinyapps::setAccountInfo(name='diegolopezpozueta', token='F3DF687050242E4E59BEFBD4F30C5704', secret='xudQAotljNW5ayn7NhfhcUGJisSuD4sTwXYWhGJh')\n\nlibrary(shinyapps)\ndeployApp()\n",
+    "created" : 1405863838051.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2142725784",
+    "id" : "A7399B",
+    "lastKnownWriteTime" : 1405868988,
+    "path" : "~/Dropbox/Data Science Specialization/9 - Developing Data Products/ShinyAppProject/script_run_deploy_shiny_app.R",
+    "project_path" : "script_run_deploy_shiny_app.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

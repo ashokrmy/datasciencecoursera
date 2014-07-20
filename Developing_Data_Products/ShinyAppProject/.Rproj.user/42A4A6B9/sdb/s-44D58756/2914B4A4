@@ -1,0 +1,16 @@
+{
+    "contents" : "Shiny App: Testing Classification Algorithms on Iris Dataset\n========================================================\nauthor: Diego Lopez\ndate: `r Sys.Date()`\n\nApp Functionality\n========================================================\n\nThis App shows the application of 3 different classification algorithms (rpart, randomForest and lda) to the iris dataset.\n\n- First it shows randomly n observations of the iris dataset, where n is the number of observations specified on the sidebar panel (5 by default). \n- Then it shows summary statistics for the iris dataset.\n- Lastly it trains a classification algorithm chosen by the user on the sidepar panel, splitting the iris dataset in training and testing sets based on the chosen proportion chosen on the sidebar (by defuault 70% training 30% testing).\n\nLink to the App\n========================================================\n\nhttps://diegolopezpozueta.shinyapps.io/ShinyAppProject/\n\n\nLink to the Github\n========================================================\n\nhttps://diegolopezpozueta.shinyapps.io/ShinyAppProject/\n\n\nSlide With Plot\n========================================================\n\n```{r, echo=FALSE}\nplot(cars)\n```\n",
+    "created" : 1405869318531.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4033065532",
+    "id" : "2914B4A4",
+    "lastKnownWriteTime" : 1405869789,
+    "path" : "~/Dropbox/Data Science Specialization/9 - Developing Data Products/ShinyAppProject/RPresentation.Rpres",
+    "project_path" : "RPresentation.Rpres",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_presentation"
+}

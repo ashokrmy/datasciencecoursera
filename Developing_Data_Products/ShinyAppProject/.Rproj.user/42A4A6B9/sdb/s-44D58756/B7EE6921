@@ -1,0 +1,16 @@
+{
+    "contents" : "\n# This is the user-interface definition of a Shiny web application.\n\nlibrary(shiny)\n\n# Define UI for dataset viewer application\nshinyUI(fluidPage(\n  \n  # Application title\n  titlePanel(\"Testing Classification Algorithms on Iris Dataset\"),\n  \n  # Sidebar with controls for the algorithms and output\n  sidebarLayout(\n    position = \"left\",\n    \n    sidebarPanel(\n      \n      numericInput(\"obs\", \"Number of observations to view:\", 5), \n         \n      sliderInput(\"slidertrainsplit\",\n                  \"Proportion of Training observations\",\n                  min = 0, max = 1, value = 0.7, step = 0.1),\n      \n      selectInput(\"algorithm\", \"Choose a Classification algorithm:\", \n                  choices = c(\"rpart\", \"randomForest\", \"lda\"))\n      \n\n    ),\n\n     \n    # Show the some example of observations, a summary of the dataset \n    # and the results on the model\n    mainPanel(\n\n      p(\"This App shows the application of 3 different classification algorithms (rpart, randomForest and lda) to the iris dataset.\"),\n      p(\"First it shows randomly n observations of the iris dataset, where n is the number of observations specified on the sidebar panel (5 by default).\"),\n      p(\"Then it shows summary statistics for the iris dataset.\"),\n      p(\"Lastly it trains a classification algorithm chosen by the user on the sidepar panel, splitting the iris dataset in training and testing sets based on the chosen proportion chosen on the sidebar (by defuault 70% training 30% testing).\"),\n      \n      \n      \n      h2(\"Dataset\"),\n      tableOutput(\"view\"), \n      \n      h2(\"Summary Statistics\"),\n      verbatimTextOutput(\"summary\"), \n      \n      h2(\"Results\"),\n      verbatimTextOutput(\"results\")\n    )\n  )\n))",
+    "created" : 1405851102870.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "871146836",
+    "id" : "B7EE6921",
+    "lastKnownWriteTime" : 1405868823,
+    "path" : "~/Dropbox/Data Science Specialization/9 - Developing Data Products/ShinyAppProject/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
