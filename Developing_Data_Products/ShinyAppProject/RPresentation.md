@@ -18,13 +18,16 @@ Link to the App
 https://diegolopezpozueta.shinyapps.io/ShinyAppProject/
 
 
-Link to the Github
+Link to Github
 ========================================================
 
-https://diegolopezpozueta.shinyapps.io/ShinyAppProject/
+https://github.com/diegolopezpozueta/datasciencecoursera/tree/master/Developing_Data_Products/ShinyAppProject
 
 
-Slide With Plot
+R code embedded
 ========================================================
 
-![plot of chunk unnamed-chunk-1](RPresentation-figure/unnamed-chunk-1.png) 
+I used embedded R code for the date on the first slide using the command `Sys.Date()`
+
+
+THANKS!
